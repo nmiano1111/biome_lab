@@ -1,0 +1,126 @@
+/* /src/app.css */
+
+:root {
+  --bg: #0b0f17;
+  --panel: rgba(20, 24, 32, 0.7);
+  --border: rgba(255,255,255,0.08);
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #60a5fa;
+}
+
+html, body, #root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.app-root {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* full screen */
+  overflow: hidden;
+}
+
+.pixi-fill {
+  position: absolute;
+  inset: 0;          /* full-bleed canvas */
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* HUD (top-right) */
+.hud {
+  position: absolute;
+  top: 12px; right: 12px;
+  display: flex; gap: 8px;
+}
+.hud-btn {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+/* Toolbar */
+.toolbar {
+  position: absolute;
+  top: 12px; bottom: 12px; left: 12px;
+  width: 320px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+.toolbar.closed {
+  transform: translateX(-16px) scale(0.98);
+  opacity: 0.0;
+  pointer-events: none;
+}
+
+.toolbar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.icon-btn, .btn {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.icon-btn { width: 32px; text-align: center; }
+
+.toolbar-scroll {
+  padding: 10px 12px;
+  overflow: auto;
+}
+
+/* Sections & controls */
+.section { margin-bottom: 12px; }
+.section-title {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 8px;
+}
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.label { color: var(--muted); }
+
+.slider { margin-bottom: 10px; }
+.slider-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.num, .range, select, input[type="number"] {
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+.range { width: 100%; height: 28px; }

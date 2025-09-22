@@ -1,0 +1,62 @@
+{
+    "compilerOptions": {
+        "isolatedDeclarations": false,
+        "verbatimModuleSyntax": false,
+        "lib": [
+            "es2020",
+            "dom",
+            "webworker"
+        ],
+        "strict": true,
+        "module": "esnext",
+        "target": "es2020",
+        "moduleResolution": "bundler",
+        "jsx": "react-jsx",
+        "allowSyntheticDefaultImports": true,
+        "resolvePackageJsonExports": true,
+        "resolvePackageJsonImports": true,
+        "resolveJsonModule": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "strictNullChecks": true,
+        "strictFunctionTypes": true,
+        "strictBindCallApply": true,
+        "strictPropertyInitialization": true,
+        "strictBuiltinIteratorReturn": true,
+        "alwaysStrict": true,
+        "useUnknownInCatchVariables": true
+    },
+    "references": [
+        {
+            "path": "./tsconfig.app.json"
+        },
+        {
+            "path": "./tsconfig.node.json"
+        }
+    ],
+    "files": [
+        "./src/App.tsx",
+        "./src/PixiCanvas.tsx",
+        "./src/main.tsx",
+        "./src/vite-env.d.ts",
+        "./src/model/constants.ts",
+        "./src/model/types.ts",
+        "./src/pixi/app.ts",
+        "./src/pixi/interactions.ts",
+        "./src/pixi/renderer.ts",
+        "./src/pixi/stage.ts",
+        "./src/pixi/textures.ts",
+        "./src/sim/brush.ts",
+        "./src/sim/climate.ts",
+        "./src/sim/noise.ts",
+        "./src/sim/protocol.ts",
+        "./src/sim/rivers.ts",
+        "./src/sim/worker.ts",
+        "./src/sim/workerBridge.ts",
+        "./src/state/selectors.ts",
+        "./src/state/store.ts"
+    ],
+    "include": [
+        "src"
+    ]
+}

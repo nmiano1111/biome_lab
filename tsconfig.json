@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "moduleResolution": "Bundler",
+    "lib": ["ES2020", "DOM", "WebWorker"],
+    "skipLibCheck": true,
+
+    "noEmit": true,                 // only type-check
+    "isolatedDeclarations": false,  // enums allowed
+    "verbatimModuleSyntax": false
+  },
+  "include": ["src"]
+}
+
