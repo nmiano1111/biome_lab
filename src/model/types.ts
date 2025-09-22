@@ -12,6 +12,8 @@ export type SimParams = {
   size: number;    // e.g., 512, 1024 (power of two helps tiling)
   noise: NoiseParams;
   climate: ClimateParams;
+  seaLevel: number;
+  latitude: number;
   riverThreshold: number; // flow needed to “paint” river
 };
 

@@ -3,7 +3,7 @@
 // No simulation logic here—just messaging + texture updates.
 
 import type { Stage } from "../pixi/stage";
-import { texturesFromFields } from "../pixi/textures";
+import {terrainTextureFromFields, texturesFromFields} from "../pixi/textures";
 import { BIOME_PALETTE } from "../model/constants";
 import type { SimParams, Brush } from "../model/types";
 import type { WorkerIn, WorkerOut } from "./protocol";
@@ -42,6 +42,8 @@ export function createWorkerBridge(
 
   // Keep current sim size (texturesFromFields needs it)
   let simSize = initialSize;
+  let currentSeed = 1;
+  let currentParams: SimParams | null = null;
 
   // Optional coalescing: if we get many 'result' messages quickly,
   // apply only the latest one on the next animation frame.
@@ -49,14 +51,13 @@ export function createWorkerBridge(
   let rafId: number | null = null;
 
   function applyResult(msg: Extract<WorkerOut, { t: "result" }>) {
-    // Build Pixi textures and apply to stage
-    const { heightTex, biomeTex, riversTex } = texturesFromFields(
+    const { terrainTex, riversTex } = terrainTextureFromFields(
       msg.fields,
       simSize,
-      BIOME_PALETTE
+      currentSeed,
+      /* seaLevel */ undefined // let textures.ts auto-derive median
     );
-    stage.setHeightTexture(heightTex);
-    stage.setBiomeTexture(biomeTex);
+    stage.setTerrainTexture(terrainTex);
     stage.setRiversTexture(riversTex);
   }
 
@@ -101,12 +102,23 @@ export function createWorkerBridge(
 
   const api: WorkerBridge = {
     worker,
+    /*
     init(seed: number, params: SimParams) {
       simSize = params.size;
       stage.setWorldSize(simSize);
       post({ t: "init", seed, params });
     },
+
+     */
+    init(seed: number, params: SimParams) {
+      currentSeed = seed;
+      currentParams = params;           // <-- add
+      simSize = params.size;
+      stage.setWorldSize(simSize);
+      post({ t: "init", seed, params });
+    },
     recompute(params: SimParams) {
+      currentParams = params;           // <-- add
       simSize = params.size;
       stage.setWorldSize(simSize);
       post({ t: "recompute", params });

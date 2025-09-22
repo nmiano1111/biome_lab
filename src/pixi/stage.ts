@@ -10,6 +10,7 @@ export type Stage = {
   setHeightTexture: (t: Texture) => void;
   setBiomeTexture: (t: Texture) => void;
   setRiversTexture: (t: Texture) => void;
+  setTerrainTexture: (t: Texture) => void;
   resize: () => void;
 
   // Camera / interaction:
@@ -46,7 +47,8 @@ export function createStage(app: Application, worldSizeInit: number): Stage {
     // crisp pixels
     s.texture.source.scaleMode = SCALE_MODES.LINEAR;
   }
-  
+
+  function setTerrainTexture(t: Texture) { applyTexture(biome, t);}
   function setHeightTexture(t: Texture) { applyTexture(height, t); }
   function setBiomeTexture(t: Texture)  { applyTexture(biome,  t); }
   function setRiversTexture(t: Texture) { applyTexture(rivers, t); }
@@ -152,6 +154,7 @@ export function createStage(app: Application, worldSizeInit: number): Stage {
     setHeightTexture,
     setBiomeTexture,
     setRiversTexture,
+    setTerrainTexture,
     resize,
     setZoom,
     zoomAt,
