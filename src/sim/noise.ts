@@ -3,6 +3,54 @@
 
 import type { SimParams, NoiseParams } from "../model/types";
 
+// e ∈ [0,1] from generateHeightField()
+// paint onto a canvas' ImageData
+export function renderHeightfieldToCanvas(
+  H: Float32Array,
+  size: number,
+  seaLevel: number,
+  ctx: CanvasRenderingContext2D
+) {
+  const img = ctx.createImageData(size, size);
+  const data = img.data; // Uint8ClampedArray
+
+  for (let i = 0; i < H.length; i++) {
+    const e = H[i];                 // normalized elevation
+    const isWater = e <= seaLevel;  // <- slider threshold
+
+    // simple palettes (swap for your own)
+    let r: number, g: number, b: number;
+    if (isWater) {
+      // shallow → deep
+      const t = Math.max(0, (seaLevel - e) / Math.max(1e-6, seaLevel));
+      r = 20 + 20 * (1 - t);
+      g = 80 + 70 * (1 - t);
+      b = 130 + 100 * (1 - t);
+    } else {
+      // beach → mountain
+      const t = Math.min(1, (e - seaLevel) / Math.max(1e-6, 1 - seaLevel));
+      r = 220 * (1 - t) + 130 * t;
+      g = 200 * (1 - t) + 120 * t;
+      b = 150 * (1 - t) + 100 * t;
+    }
+
+    const p = i * 4;
+    data[p + 0] = r | 0;
+    data[p + 1] = g | 0;
+    data[p + 2] = b | 0;
+    data[p + 3] = 255;
+  }
+
+  ctx.putImageData(img, 0, 0);
+}
+
+export function makeWaterMask(H: Float32Array, seaLevel: number): Uint8Array {
+  const M = new Uint8Array(H.length);
+  for (let i = 0; i < H.length; i++) M[i] = H[i] <= seaLevel ? 1 : 0;
+  return M;
+}
+
+
 /** Simple, fast deterministic PRNG */
 export function xorshift32(seed: number) {
   let s = seed >>> 0 || 1; // avoid zero

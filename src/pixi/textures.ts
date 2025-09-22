@@ -1,7 +1,6 @@
 // /src/pixi/textures.ts (Pixi v8)
 import { Texture, BufferImageSource } from "pixi.js";
 import type { Fields } from "../model/types";
-import {blendColors, detailNoise} from "./colors";
 
 function blendColors(c1: number, c2: number, t: number) {
   const r = ((c1 >> 16) & 255) * (1 - t) + ((c2 >> 16) & 255) * t;
@@ -20,17 +19,12 @@ function detailNoise(x: number, y: number, seed: number) {
 // median of a downsampled copy (avoid sorting 262k values)
 function medianHeight(H: Float32Array): number {
   const N = H.length;
-  const sample = 32768; // ~32k for speed/quality
-  if (N <= sample) {
-    const a = Array.from(H);
-    a.sort((x, y) => x - y);
-    return a[(a.length >> 1)];
-  }
-  const step = Math.floor(N / sample);
-  const a = new Array<number>(sample);
-  for (let i = 0, idx = 0; i < sample; i++, idx += step) a[i] = H[idx];
-  a.sort((x, y) => x - y);
-  return a[a.length >> 1];
+  const sample = Math.min(32768, N);
+  const step = Math.max(1, Math.floor(N / sample));
+  const arr: number[] = [];
+  for (let i = 0; i < N; i += step) arr.push(H[i]);
+  arr.sort((a,b)=>a-b);
+  return arr[arr.length >> 1];
 }
 
 
@@ -77,6 +71,98 @@ export function textureFromBiomes(
     buf[j] = r; buf[j + 1] = g; buf[j + 2] = b; buf[j + 3] = 255;
   }
   return textureFromRGBA(buf, size);
+}
+
+/** Rivers overlay that:
+ *  - draws rivers only on land (height >= seaLevel)
+ *  - adds a darkened "plume" into nearby ocean pixels at mouths
+ */
+export function textureFromRiversNice(
+  height: Float32Array,
+  rivers: Uint8Array,
+  size: number,
+  seaLevel?: number,
+  waterShallow: number = 0x1e4f7a, // keep consistent w/ terrain palette
+  plumeDarken = 0.25,              // how much to darken plume vs base water
+  plumeRadius = 2                  // how far into ocean (in pixels)
+): Texture {
+  const H = height;
+  const SL = seaLevel ?? medianHeight(H);
+
+  // Build an RGBA buffer initialized transparent
+  const buf = new Uint8Array(size * size * 4);
+  const idx4 = (i: number) => i * 4;
+
+  const inBounds = (x: number, y: number) => x >= 0 && x < size && y >= 0 && y < size;
+  const at = (x: number, y: number) => y * size + x;
+
+  // Pass 1: draw rivers only on land as semi-transparent blue
+  for (let i = 0; i < size * size; i++) {
+    if (!rivers[i]) continue;
+    if (H[i] < SL) continue; // mask out ocean
+
+    const j = idx4(i);
+    // nice blue; tweak if you prefer
+    buf[j + 0] = 0;     // R
+    buf[j + 1] = 120;   // G
+    buf[j + 2] = 255;   // B
+    buf[j + 3] = 200;   // A
+  }
+
+  // Pass 2: add a mouth/plume where land-river touches ocean
+  // For each land river pixel with any ocean neighbor, darken nearby ocean pixels.
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = at(x, y);
+      if (!rivers[i]) continue;
+      if (H[i] < SL) continue; // only consider land river cells
+
+      // is it adjacent to ocean?
+      let touchesOcean = false;
+      for (let oy = -1; oy <= 1 && !touchesOcean; oy++) {
+        for (let ox = -1; ox <= 1 && !touchesOcean; ox++) {
+          if (ox === 0 && oy === 0) continue;
+          const nx = x + ox, ny = y + oy;
+          if (!inBounds(nx, ny)) continue;
+          if (H[at(nx, ny)] < SL) touchesOcean = true;
+        }
+      }
+      if (!touchesOcean) continue;
+
+      // darken a small disk of ocean pixels as a "plume"
+      for (let ry = -plumeRadius; ry <= plumeRadius; ry++) {
+        for (let rx = -plumeRadius; rx <= plumeRadius; rx++) {
+          const nx = x + rx, ny = y + ry;
+          if (!inBounds(nx, ny)) continue;
+          if (rx * rx + ry * ry > plumeRadius * plumeRadius) continue;
+
+          const k = at(nx, ny);
+          if (H[k] >= SL) continue; // only modify ocean
+
+          // base ocean color is shallow water; darken toward the center
+          const dist = Math.sqrt(rx * rx + ry * ry);
+          const t = 1 - dist / (plumeRadius + 1e-6); // 1 at center -> 0 at edge
+          const dark = blendColors(waterShallow, 0x000000, plumeDarken * t);
+
+          const jj = idx4(k);
+          // Write as pre-multiplied-ish overlay (semi-transparent)
+          buf[jj + 0] = (dark      ) & 255; // R
+          buf[jj + 1] = (dark >> 8 ) & 255; // G
+          buf[jj + 2] = (dark >> 16) & 255; // B
+          buf[jj + 3] = Math.max(buf[jj + 3], Math.floor(90 * t)); // fade to 0 at edges
+        }
+      }
+    }
+  }
+
+  // Reuse your texture helper (explicit RGBA if you set it)
+  const source = new BufferImageSource({
+    resource: buf,
+    width: size,
+    height: size,
+    format: "rgba8unorm" as any,
+  });
+  return new Texture({ source });
 }
 
 /** Convert a river mask into a semi-transparent blue overlay texture. */
@@ -217,8 +303,10 @@ export function terrainTextureFromFields(
       contour: true,
       textureAmount: 0.08,
       shadeStrength: 5.0,
-      // normalize: true, // enable if coastlines look off due to warped ranges
+      // normalize: true,
     }),
-    riversTex: textureFromRivers(fields.rivers, size),
+    // was: textureFromRivers(fields.rivers, size),
+    riversTex: textureFromRiversNice(fields.height, fields.rivers, size, seaLevel),
   };
 }
+
