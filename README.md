@@ -1,69 +1,37 @@
-# React + TypeScript + Vite
+# 🌍 Biome Lab
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A procedural terrain generator built with **React** and **PixiJS**, designed for experimenting with noise functions, map overlays, and interactive worldbuilding.  
 
-Currently, two official plugins are available:
+## ✨ Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Noise-based terrain generation**  
+  Adjustable parameters like seed, size, octaves, lacunarity, and gain.  
 
-## Expanding the ESLint configuration
+- **Domain warping**  
+  Adds more natural, organic terrain shapes.  
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Multiple layers**  
+  - Heightmap  
+  - Biome  
+  - Rivers flowing into oceans  
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Sea level controls**  
+  Dynamically adjust waterline and coastlines.  
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Interactive canvas**  
+  - Zoom and pan  
+  - Optional brush tools (can be toggled on/off)  
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🛠 Tech Stack
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- [React](https://react.dev/) – UI framework  
+- [PixiJS](https://pixijs.com/) – WebGL rendering engine  
+- [Vite](https://vite.dev/) – Fast development bundler  
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 🚀 Getting Started
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Clone the repo:
+
+```bash
+npm install
+npm run dev
